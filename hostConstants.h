@@ -24,6 +24,8 @@
 
 #define ALPHA 0.0 //  probability of Bi-directional connections
 
+#define START_FREQ 0.261625565 // in ms^-1
+
 /* params patch */
 #define L 1.0
 #define CON_SIGMA (L * 0.18)

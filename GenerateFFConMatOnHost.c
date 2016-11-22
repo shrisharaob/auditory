@@ -106,7 +106,7 @@ double XCordinate(unsigned long  neuronIdx) {
 double Gaussian1D(double distance, double sigma) {
   double denom = (2.0 * sigma * sigma); 
   double z1 = (1.0 / (sigma * sqrt( 2.0 * PI)));
-  double dummy = z1 * exp(-1.0 * (distance * distance) / denom);
+  /* double dummy = z1 * exp(-1.0 * (distance * distance) / denom); */
   return  z1 * exp(-1.0 * (distance * distance) / denom);
 }
 
@@ -129,18 +129,22 @@ double ShortestDistOnCirc(double point0, double point1, double perimeter) {
 double ConProb(double xa, double ya, double xb, double yb, double patchSize, double varianceOfGaussian, int IF_PERIODIC) {
   double distX = 0.0; //ShortestDistOnCirc(xa, xb, patchSize);
   double distY = 0.0; //ShortestDistOnCirc(ya, yb, patchSize);
+  double reflextedXright, reflextedXleft;
   double out = 0.0;
-  if(IF_PERIODIC) {
-    distX = ShortestDistOnCirc(xa, xb, patchSize);
-    distY = ShortestDistOnCirc(ya, yb, patchSize);
-  }
-  else {
-    distX = xa - xb;
-    distY = ya - yb;
-  }
-  // return Gaussian2D(distX, distY, varianceOfGaussian);
-  //  double dummy = Gaussian1D(distX, varianceOfGaussian) * Gaussian1D(distY, varianceOfGaussian);
-  return Gaussian1D(distX, varianceOfGaussian) * Gaussian1D(distY, varianceOfGaussian);
+  distX = xa - xb;
+  distY = ShortestDistOnCirc(ya, yb, patchSize);
+  reflextedXleft = -xb;
+  reflextedXright = 2.0 * patchSize - xb;
+  out = Gaussian1D(distX, varianceOfGaussian) + Gaussian1D(xa - reflextedXleft, varianceOfGaussian) + Gaussian1D(xa - reflextedXright, varianceOfGaussian);
+  return out * Gaussian1D(distY, varianceOfGaussian);
+  /* if(IF_PERIODIC) { */
+  /*   distX = ShortestDistOnCirc(xa, xb, patchSize); */
+  /*   distY = ShortestDistOnCirc(ya, yb, patchSize); */
+  /* } */
+  /* else { */
+  /*   distX = xa - xb; */
+  /*   distY = ya - yb; */
+  /* } */
 }
 
 

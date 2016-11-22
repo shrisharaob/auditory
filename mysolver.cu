@@ -89,6 +89,7 @@ int main(int argc, char *argv[]) {
   printf("\n Computing on GPU%d \n", deviceId);
   cudaCheck(cudaSetDevice(deviceId));
   theta_degrees = host_theta;
+  host_theta = START_FREQ * pow(pow(2.0, 1.0 / 12.0), 2.0 * host_theta); // fn = f0 * (12th root of2)^2n
   host_theta = PI * host_theta / (180.0); /* convert to radians */
   /* ================ SIMULATING SOME JITTER IN INPUT ORIENTATION (COULD BE DUE TO EYE TITLT, TO CHECK FANO FACTOR M TUNING) ======= */
   //srand(time(NULL));
@@ -102,7 +103,7 @@ int main(int argc, char *argv[]) {
   //  nSteps = 800;
   printf("\n N  = %llu \n NE = %llu \n NI = %llu \n K  = %d \n tStop = %d milli seconds nSteps = %d\n\n", N_NEURONS, NE, NI, (int)K, (int)tStop, nSteps);
   
-  printf(" theta = %2.3f \n contrast = %2.1f\n ksi = %f\n dt = %f \n tau = %f \n EXP_SUM = %.16f\n", host_theta * 180.0 / PI, HOST_CONTRAST, ETA_E, DT, TAU_SYNAP, EXP_SUM);
+  printf(" tone freq = %2.3f \n intensity = %2.1f\n ksi = %f\n dt = %f \n tau = %f \n EXP_SUM = %.16f\n", host_theta * 180.0 / PI, HOST_CONTRAST, ETA_E, DT, TAU_SYNAP, EXP_SUM);
   printf("alpha = %f, RHO = %f\n", ALPHA, RHO);
   
   // STORE MEAN G_FF

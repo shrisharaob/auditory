@@ -30,6 +30,12 @@ __device__ double Gaussian2D(double x, double y, double varianceOfGaussian) {
   return  z1 * z1 * exp(-1 * pow(x, 2) / (denom)) * z1 * z1 * exp(-1 * pow(y, 2) / (denom));
 }
 
+__device__ double Gaussian1D(double distance, double sigma) {
+  double denom = (2.0 * sigma * sigma); 
+  double z1 = (1.0 / (sigma * sqrt( 2.0 * PI)));
+  // double dummy = z1 * exp(-1.0 * (distance * distance) / denom);
+  return  z1 * exp(-1.0 * (distance * distance) / denom);
+}
 
 __device__ double ShortestDistOnCirc(double point0, double point1, double perimeter) {
   double dist = 0.0;
@@ -45,23 +51,39 @@ __device__ double ShortestDistOnCirc(double point0, double point1, double perime
 __device__ double ConProb_new(double xa, double ya, double xb, double yb, double patchSize, double varianceOfGaussian, int IF_PERIODIC) {
   double distX = 0.0; //ShortestDistOnCirc(xa, xb, patchSize);
   double distY = 0.0; //ShortestDistOnCirc(ya, yb, patchSize);
-  //  double out = 0.0;
-  if(IF_PERIODIC) {
-    distX = ShortestDistOnCirc(xa, xb, patchSize);
-    distY = ShortestDistOnCirc(ya, yb, patchSize);
-  }
-  else {
-    distX = abs(xa - xb);
-    distY = abs(ya - yb);
-  }
-  return Gaussian2D(distX, distY, varianceOfGaussian);
+  double out = 0.0;
+  double reflextedXright, reflextedXleft;
+
+  distX = xa - xb;
+  distY = ShortestDistOnCirc(ya, yb, patchSize);
+  reflextedXleft = -xb;
+  reflextedXright = 2.0 * patchSize - xb;
+  out = Gaussian1D(distX, varianceOfGaussian) + Gaussian1D(xa - reflextedXleft, varianceOfGaussian) + Gaussian1D(xa - reflextedXright, varianceOfGaussian);
+  return out * Gaussian1D(distY, varianceOfGaussian);
+
+
+
+  
+  
+  // if(IF_PERIODIC) {
+  //   distX = ShortestDistOnCirc(xa, xb, patchSize);
+  //   distY = ShortestDistOnCirc(ya, yb, patchSize);
+  // }
+  // else {
+  //   distX = abs(xa - xb);
+  //   distY = abs(ya - yb);
+  // }
+  // return Gaussian2D(distX, distY, varianceOfGaussian);
 }
 
 __device__ double conProb(double xa, double ya, double xb, double yb, double patchSize, double varianceOfGaussian) {
   /* returns connection probablity given cordinates (xa, ya) and (xb, yb) */
   /*  double z1 (1 / sqrt(2 * PI * CON_SIGMA)); // make global var
   double denom = (2 * CON_SIGMA * CON_SIGMA); // global var*/
-  double x0, x1, y0, y1, result; 
+  double x0, x1, y0, y1, result;
+
+
+  
   x0 = fmod(abs(xa-xb), patchSize * 0.5); //PERODIC CONDITION
   x1 = fmod(abs(xa-xb), -1 * patchSize * 0.5);
   y0 = fmod(abs(ya-yb), patchSize * 0.5);

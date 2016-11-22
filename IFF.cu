@@ -4,6 +4,7 @@
 #include "devFunctionProtos.h"
 #include "cudaRandFuncs.cu" /* nvcc doesn't compile without the source !*/
 #include "math.h"
+
 /* ff input */
 __global__ void AuxRffTotal(curandState *devNormRandState, curandState *devStates) {
   unsigned int mNeuron = threadIdx.x + blockDim.x * blockIdx.x ;
@@ -39,11 +40,12 @@ __global__ void AuxRffTotal(curandState *devNormRandState, curandState *devState
 __global__ void AuxRffTotalWithOriMap() {
   unsigned int mNeuron = threadIdx.x + blockDim.x * blockIdx.x ;
   if(mNeuron < NFF) {
-    POInOriMap[mNeuron] = OrientationAngleForGivenNeuron(mNeuron);
+   POInOriMap[mNeuron] = OrientationAngleForGivenNeuron(mNeuron);    
+    // POInOriMap[mNeuron] = OrientationAngleForGivenNeuron(mNeuron);
   }
 }
 
-__device__ double Log2(x) {
+__device__ double Log2(double x) {
   return log(x) / log(2.0);
 }
 
@@ -52,7 +54,8 @@ __global__ void GenPoissionSpikeInFFLayer(curandState *poisRandState) {
   double instRate = 0.0; // instanteneous rate
   if(mNeuron < NFF) {
     // instRate = R0 + 1.0 * R0 * cos(2.0* (theta - POInOriMap[mNeuron]));
-    instRate = 2 * CONTRAST * exp(-1.0 * Log2(abs(POInOriMap[mNeuron] - theta)) / 0.03125);
+    instRate = 2.0 * CONTRAST * exp(-1.0 * Log2(theta / POInOriMap[mNeuron]) * Log2(theta / POInOriMap[mNeuron]) / 0.03125);
+    instRate = 0.02;
     IF_SPIKE_POISSION_SPK[mNeuron] = 0;
     if((instRate * DT) > randkernel(poisRandState)) {
       IF_SPIKE_POISSION_SPK[mNeuron] = 1;
@@ -99,31 +102,39 @@ __device__ double MyDivide(double x, double y) {
 __device__ double OrientationAngleForGivenNeuron(unsigned int neuronId){
   // SIMPLE PIN WHEEL PO ASSIGNMENT BASED ON LOCATION ON THE PATCH 
   unsigned long mNeuron;
-  double xCordinate = 0.0, yCordinate = 0.0;
-  double out  = 0;
-  int IF_CIRCLE = 0;
+  double out  = 0, freqStep = 0.0, nOctaves = 4.0;
   mNeuron = (unsigned long) neuronId;
-  xCordinate = XCordinate(mNeuron);
-  yCordinate = YCordinate(mNeuron);
   Dummy((double)mNeuron);
+  freqStep = nOctaves / sqrt((double)NE); // assumimg NE = NI
+  double tmpIdx = fmod((double)mNeuron, sqrt((double)NE));
+  out = START_FREQ * pow(2.0, tmpIdx * freqStep);
+
+  // double xCordinate = 0.0, yCordinate = 0.0;
+
+  // double startFreq = 0.261625565; 
+  // int IF_CIRCLE = 0;
+
+  // xCordinate = XCordinate(mNeuron);
+  // yCordinate = YCordinate(mNeuron);
+  
   //pinwheel center coincides with the center of patch, so shift origin to center of patch
-  xCordinate = xCordinate - (L_FF * 0.5);
-  yCordinate = yCordinate - (L_FF * 0.5);
-  if(IF_CIRCLE) {
-    if((xCordinate*xCordinate) + (yCordinate * yCordinate) <= (L_FF * 0.5) * (L_FF * 0.5)) {
-    // if neuron lies inside the circle of radius 
-      //    out = fmod(atan(MyDivide(yCordinate, xCordinate)) + PI, PI); 
-      //      out = atan(MyDivide(yCordinate, xCordinate)) + (PI / 2.0);
-      out = 0.5 * (atan2(xCordinate, yCordinate)) + PI * 0.5;
-    }
-    else {
-      out = 720.0;
-    }
-  }
-  else  {
-    out = 0.5 * (atan2(xCordinate, yCordinate)) + PI * 0.5;
-    //out = atan(MyDivide(yCordinate, xCordinate)) + (PI / 2.0);
-  }
+  // xCordinate = xCordinate - (L_FF * 0.5);
+  // yCordinate = yCordinate - (L_FF * 0.5);
+  // if(IF_CIRCLE) {
+  //   if((xCordinate*xCordinate) + (yCordinate * yCordinate) <= (L_FF * 0.5) * (L_FF * 0.5)) {
+  //   // if neuron lies inside the circle of radius 
+  //     //    out = fmod(atan(MyDivide(yCordinate, xCordinate)) + PI, PI); 
+  //     //      out = atan(MyDivide(yCordinate, xCordinate)) + (PI / 2.0);
+  //     out = 0.5 * (atan2(xCordinate, yCordinate)) + PI * 0.5;
+  //   }
+  //   else {
+  //     out = 720.0;
+  //   }
+  // }
+  // else  {
+  //   out = 0.5 * (atan2(xCordinate, yCordinate)) + PI * 0.5;
+  //   //out = atan(MyDivide(yCordinate, xCordinate)) + (PI / 2.0);
+  // }
   //  Dummy(out);
   return out;
 }

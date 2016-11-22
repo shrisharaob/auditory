@@ -313,7 +313,7 @@ int main(int argc, char *argv[]) {
   enum ConMat_type {
     random, sparseE2E, distDependent, biDir, fixedEII
   };
-  ConMat_type conMatType = biDir; 
+  ConMat_type conMatType = distDependent; //biDir; 
   if(argc > 1) {
     if(atoi(argv[1]) == 0) 
       conMatType = random;
