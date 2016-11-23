@@ -5,7 +5,7 @@
 #include "devHostConstants.h"
 
 /* GENERATE CONNECTION MATRIX */
-__device__ double YCordinate(unsigned long int neuronIdx) {
+__device__ double XCordinate(unsigned long int neuronIdx) {
   // nA - number of E or I cells
   double nA = (double)NE;
   if(neuronIdx > NE) { // since neuronIds for inhibitopry start from NE jusqu'a N_NEURONS
@@ -15,7 +15,7 @@ __device__ double YCordinate(unsigned long int neuronIdx) {
   return fmod((double)neuronIdx, sqrt(nA)) * (L / (sqrt(nA) - 1));
 }
 
-__device__ double XCordinate(unsigned long  neuronIdx) {
+__device__ double YCordinate(unsigned long  neuronIdx) {
   double nA = (double)NE;
   if(neuronIdx > NE) {
     neuronIdx -= NE;

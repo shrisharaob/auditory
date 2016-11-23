@@ -72,19 +72,18 @@ void ConProbPreFactor(double *conProbMat) {
   }
 }
 
-
-double FF_YCordinate(unsigned long int neuronIdx) {
+double FF_XCordinate(unsigned long int neuronIdx) {
   // nA - number of FF neurons
   double nA = (double)NFF;
   return fmod((double)neuronIdx, sqrt(nA)) * (L / (sqrt(nA) - 1));
 }
 
-double FF_XCordinate(unsigned long  neuronIdx) {
+double FF_YCordinate(unsigned long  neuronIdx) {
   double nA = (double)NFF;
   return floor((double)neuronIdx / sqrt(nA)) * (L / (sqrt(nA) - 1));   
 }
 
-double YCordinate(unsigned long int neuronIdx) {
+double XCordinate(unsigned long int neuronIdx) {
   // nA - number of E or I cells
   double nA = (double)NE;
   if(neuronIdx > NE - 1) { // since neuronIds for inhibitopry start from NE jusqu'a N_NEURONS
@@ -94,7 +93,7 @@ double YCordinate(unsigned long int neuronIdx) {
   return fmod((double)neuronIdx, sqrt(nA)) * (L / (sqrt(nA) - 1));
 }
 
-double XCordinate(unsigned long  neuronIdx) {
+double YCordinate(unsigned long  neuronIdx) {
   double nA = (double)NE;
   if(neuronIdx > NE - 1) {
     neuronIdx -= NE;
@@ -116,6 +115,30 @@ double Gaussian2D(double x, double y, double varianceOfGaussian) {
   return  z1 * z1 * exp(-1 * pow(x, 2) / (denom)) * z1 * z1 * exp(-1 * pow(y, 2) / (denom));
 }
 
+double Gaussian1DPeriodic(double distance, double sigma, double k, double L) {
+  double denom = (2.0 * sigma * sigma); 
+  double z1 = (1.0 / (sigma * sqrt( 2.0 * PI)));
+  return  z1 * exp(-1.0 * (distance + k * L) * (distance + k * L) / denom);
+}
+
+
+double PeriodicGaussian(double x, double sigma, double L, int nK) {
+  double out = 0;
+  for(int i=0; i < nK; ++i) {
+    out += Gaussian1DPeriodic(x, sigma, i, L) + Gaussian1DPeriodic(x, sigma, -i, L);
+  }
+  return out;
+}
+
+double ReflectingGaussian(double x0, double x1, double sigma, double L, int nK) {
+  double out = 0;
+  for(int i=0; i < nK; ++i) {
+    out += Gaussian1DPeriodic(pow(-1., i) * x0 - x1, sigma, i, L) + Gaussian1DPeriodic(pow(-1., i) * x0 - x1, sigma, -i, L);
+  }
+  return out;
+}
+
+
 double ShortestDistOnCirc(double point0, double point1, double perimeter) {
   double dist = 0.0;
   dist = abs(point0 - point1);
@@ -127,24 +150,7 @@ double ShortestDistOnCirc(double point0, double point1, double perimeter) {
 }
 
 double ConProb(double xa, double ya, double xb, double yb, double patchSize, double varianceOfGaussian, int IF_PERIODIC) {
-  double distX = 0.0; //ShortestDistOnCirc(xa, xb, patchSize);
-  double distY = 0.0; //ShortestDistOnCirc(ya, yb, patchSize);
-  double reflextedXright, reflextedXleft;
-  double out = 0.0;
-  distX = xa - xb;
-  distY = ShortestDistOnCirc(ya, yb, patchSize);
-  reflextedXleft = -xb;
-  reflextedXright = 2.0 * patchSize - xb;
-  out = Gaussian1D(distX, varianceOfGaussian) + Gaussian1D(xa - reflextedXleft, varianceOfGaussian) + Gaussian1D(xa - reflextedXright, varianceOfGaussian);
-  return out * Gaussian1D(distY, varianceOfGaussian);
-  /* if(IF_PERIODIC) { */
-  /*   distX = ShortestDistOnCirc(xa, xb, patchSize); */
-  /*   distY = ShortestDistOnCirc(ya, yb, patchSize); */
-  /* } */
-  /* else { */
-  /*   distX = xa - xb; */
-  /*   distY = ya - yb; */
-  /* } */
+  return ReflectingGaussian(xa, xb, varianceOfGaussian, patchSize, 5) * PeriodicGaussian(ya - yb, varianceOfGaussian, patchSize, 5); 
 }
 
 

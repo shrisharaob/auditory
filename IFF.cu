@@ -54,8 +54,7 @@ __global__ void GenPoissionSpikeInFFLayer(curandState *poisRandState) {
   double instRate = 0.0; // instanteneous rate
   if(mNeuron < NFF) {
     // instRate = R0 + 1.0 * R0 * cos(2.0* (theta - POInOriMap[mNeuron]));
-    instRate = 2.0 * CONTRAST * exp(-1.0 * Log2(theta / POInOriMap[mNeuron]) * Log2(theta / POInOriMap[mNeuron]) / 0.03125);
-    instRate = 0.02;
+    instRate = 2e-2 * CONTRAST * exp(-1.0 * Log2(theta / POInOriMap[mNeuron]) * Log2(theta / POInOriMap[mNeuron]) / 0.03125);
     IF_SPIKE_POISSION_SPK[mNeuron] = 0;
     if((instRate * DT) > randkernel(poisRandState)) {
       IF_SPIKE_POISSION_SPK[mNeuron] = 1;

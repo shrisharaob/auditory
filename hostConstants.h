@@ -16,7 +16,7 @@
 #define HOST_CFF 0.2 // KFF = CFF * K
 
 #define N_NEURONS_TO_STORE_START 0
-#define N_NEURONS_TO_STORE_END 500
+#define N_NEURONS_TO_STORE_END 10
 #define N_NEURONS_TO_STORE (N_NEURONS_TO_STORE_END - N_NEURONS_TO_STORE_START)
 #define N_E_2BLOCK_NA_CURRENT 500 // number of first n neurons to have their Na2+ currents blocked
 #define N_I_2BLOCK_NA_CURRENT 1

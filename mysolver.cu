@@ -38,7 +38,7 @@ void __cudaCheckLastError(const char *errorMessage, const char *file, const int 
 }
 
 int main(int argc, char *argv[]) {
-  double tStart = 0.0, tStop = 55000.0;
+  double tStart = 0.0, tStop = 20000.0;
   double *spkTimes, *vm = NULL, host_theta = 0.0, theta_degrees; /* *vstart; 500 time steps */
   int *nSpks, *spkNeuronIds, nSteps, i, k, lastNStepsToStore;
   double *dev_vm = NULL, *dev_spkTimes, *dev_time = NULL, *host_time;
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
   cudaCheck(cudaSetDevice(deviceId));
   theta_degrees = host_theta;
   host_theta = START_FREQ * pow(pow(2.0, 1.0 / 12.0), 2.0 * host_theta); // fn = f0 * (12th root of2)^2n
-  host_theta = PI * host_theta / (180.0); /* convert to radians */
+  // host_theta = PI * host_theta / (180.0); /* convert to radians */
   /* ================ SIMULATING SOME JITTER IN INPUT ORIENTATION (COULD BE DUE TO EYE TITLT, TO CHECK FANO FACTOR M TUNING) ======= */
   //srand(time(NULL));
   //  double tmprnd = ((double) rand() / (RAND_MAX + 1.0)) * (5.0) - (2.5); // simulatinge eye tilt
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
   //  nSteps = 800;
   printf("\n N  = %llu \n NE = %llu \n NI = %llu \n K  = %d \n tStop = %d milli seconds nSteps = %d\n\n", N_NEURONS, NE, NI, (int)K, (int)tStop, nSteps);
   
-  printf(" tone freq = %2.3f \n intensity = %2.1f\n ksi = %f\n dt = %f \n tau = %f \n EXP_SUM = %.16f\n", host_theta * 180.0 / PI, HOST_CONTRAST, ETA_E, DT, TAU_SYNAP, EXP_SUM);
+  printf(" tone freq = %2.3f Hz \n intensity = %2.1f\n ksi = %f\n dt = %f \n tau = %f \n EXP_SUM = %.16f\n", host_theta * 1e3, HOST_CONTRAST, ETA_E, DT, TAU_SYNAP, EXP_SUM);
   printf("alpha = %f, RHO = %f\n", ALPHA, RHO);
   
   // STORE MEAN G_FF
